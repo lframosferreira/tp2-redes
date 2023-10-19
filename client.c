@@ -78,18 +78,16 @@ int main(int argc, char **argv) {
                0) { // n tem operation type tnc
       topic = strtok(NULL, " ");
     } else if (strcmp(command, "publish") == 0) {
-      strtok(NULL, " "); // discard in
+      char *in = strtok(NULL, " "); // discard in
       topic = strtok(NULL, " ");
-
       if (fgets(operation.content, sizeof(operation.content), stdin) == NULL) {
         err_n_die("Error while reading client input using fgets().\n");
       }
       operation.content[strcspn(operation.content, "\n")] = '\0';
-
       operation.operation_type = NEW_POST_IN_TOPIC;
       strncpy(operation.topic, topic, TOPIC_SIZE);
     } else if (strcmp(command, "list") == 0) { // list topics case (maybe put it
-                                          // before all others?)
+                                               // before all others?)
       operation.operation_type = LIST_TOPICS;
       strcpy(operation.topic, "");
       strcpy(operation.content, "");

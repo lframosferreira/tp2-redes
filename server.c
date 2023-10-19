@@ -2,6 +2,8 @@
 
 volatile int client_id_count = 0;
 
+int clients_list[MAX_CLIENTS] = {0};
+
 struct Topic *list_of_topics = NULL;
 
 void handle_client(int csockfd) {
@@ -10,7 +12,8 @@ void handle_client(int csockfd) {
       operation; // checar se é ok fzr isso e nao alocar na heap
   memset(&operation, 0, sizeof(operation));
 
-  // primeria conexao
+  // Tratamento da conexão inicial, onde o servidor atribui um ID ao cliente que
+  // acabou de se conectar e envia uma mensagem de volta com o ID escolhido.
   ssize_t bytes_received = recv(csockfd, &operation, sizeof(operation), 0);
   if (bytes_received == -1) {
     err_n_die("Erro no recv() de um client\n");
@@ -29,7 +32,7 @@ void handle_client(int csockfd) {
     err_n_die("Error on sending first message of connection to client.\n");
   }
 
-  fprintf(stdout, "client %01d connected\n", operation.client_id);
+  fprintf(stdout, "client %02d connected\n", operation.client_id);
 
   const int CLIENT_ID = operation.client_id;
 
@@ -42,8 +45,15 @@ void handle_client(int csockfd) {
       break;
     }
 
+    struct Topic *topic;
+
     switch (operation.operation_type) {
     case NEW_POST_IN_TOPIC:
+      topic = get_or_create_topic(&list_of_topics, operation.topic);
+
+      // redirect to other threads MAIN
+      fprintf(stdout, "new post added in %s by %02d\n", operation.topic,
+              operation.client_id);
       break;
     case LIST_TOPICS:
       if (list_of_topics == NULL) {
@@ -54,8 +64,7 @@ void handle_client(int csockfd) {
       }
       break;
     case SUBSCRIBE_IN_TOPIC:
-      struct Topic *topic =
-          get_or_create_topic(&list_of_topics, operation.topic);
+      topic = get_or_create_topic(&list_of_topics, operation.topic);
       if (topic->subscribed_clients[operation.client_id - 1] == 1) {
         strncpy(operation.content, "error: already subscribed\n", CONTENT_SIZE);
       } else {
@@ -63,9 +72,12 @@ void handle_client(int csockfd) {
       }
       break;
     case DISCONNECT_FROM_SERVER:
+      clients_list[operation.client_id - 1] = 0;
+      fprintf(stdout, "client %02d was disconnected\n", operation.client_id);
+      close(csockfd);
       break;
     default:
-      fprintf(stderr, "nao entendi\n");
+      fprintf(stderr, "error: command not found\n");
       break;
     }
 
@@ -124,7 +136,7 @@ int main(int argc, char **argv) {
 
   // Desalocando memória utilizada para a lista de tópicos
   struct Topic *curr = list_of_topics;
-  while (curr != NULL){
+  while (curr != NULL) {
     struct Topic *aux = curr;
     curr = curr->next;
     free(aux);
