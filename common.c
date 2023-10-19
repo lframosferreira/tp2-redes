@@ -82,3 +82,41 @@ int server_sockaddr_init(const char *addr_family, const char *portstr,
 
   return -1;
 }
+
+/* --------------------------------------- */
+
+struct Topic *get_or_create_topic(struct Topic *head, const char *topic_name) {
+  struct Topic *curr = head;
+  while (curr != NULL && strcmp(topic_name, curr->name) != 0) {
+    curr = curr->next;
+  }
+
+  if (curr == NULL) {
+    struct Topic *new_topic = (struct Topic *)malloc(sizeof(struct Topic));
+    if (new_topic == NULL) {
+      err_n_die("Error while allocating memory using malloc()\n.");
+    }
+    strncpy(new_topic->name, topic_name, sizeof(topic_name));
+    memset(new_topic->subscribed_clients, 0,
+           sizeof(new_topic->subscribed_clients));
+    new_topic->next = NULL;
+    return new_topic;
+  }
+
+  return curr;
+}
+
+void get_topics_names(char *topics_names, struct Topic *head) {
+  if (head == NULL) {
+    strcpy(topics_names, "");
+    return;
+  }
+
+  struct Topic *curr = head;
+  while (curr != NULL) {
+    strcat(topics_names, curr->name);
+    if (curr->next != NULL) {
+      strcat(topics_names, ";");
+    }
+  }
+}

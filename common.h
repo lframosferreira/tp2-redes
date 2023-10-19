@@ -60,33 +60,13 @@ int server_sockaddr_init(const char *addr_family, const char *porstr,
 struct Topic {
   char *name[TOPIC_SIZE];
   int subscribed_clients[MAX_CLIENTS];
-  Topic *next;
+  struct Topic *next;
 };
 
-void insert_topic(struct Topic *head, const char *topic_name) {
-  struct Topic *curr = head;
-  while (curr->next != NULL) {
-    curr = curr->next;
-  }
+struct Topic *get_or_create_topic(struct Topic *head, const char *topic_name);
 
-  struct Topic *new_topic = (struct Topic *)malloc(sizeof(struct Topic));
-  if (new_topic == NULL) {
-    err_n_die("Error while allocating memory using malloc()\n.");
-  }
-  strncpy(new_topic->name, topic_name, sizeof(topic_name));
-  memset(new_topic->subscribed_clients, 0,
-         sizeof(new_topic->subscribed_clients));
-  new_topic->next = NULL;
-}
+// armazena em topcis_names os nomes dos topicos separados por ;
+void get_topics_names(char *topics_names, struct Topic *head);
 
-void remove_topic(struct Topic *head, const char *topic_name) {
-  struct Topic *curr = head;
-  while (strcmp(topic_name, curr->name) != 0) {
-    curr = curr->next;
-  }
-
-
-
-}
 
 #endif

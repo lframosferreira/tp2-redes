@@ -2,9 +2,7 @@
 
 volatile int client_id_count = 0;
 
-
-
-
+volatile struct Topic *list_of_topics = NULL;
 
 void handle_client(int csockfd) {
 
@@ -30,9 +28,46 @@ void handle_client(int csockfd) {
   if (send(csockfd, &operation, sizeof(operation), 0) == -1) {
     err_n_die("Error on sending first message of connection to client.\n");
   }
+
   fprintf(stdout, "client %01d connected\n", operation.client_id);
 
+  const int CLIENT_ID = operation.client_id;
+
   for (;;) {
+    memset(&operation, 0, sizeof(operation));
+    ssize_t bytes_received = recv(csockfd, &operation, sizeof(operation), 0);
+    if (bytes_received == -1) {
+      err_n_die("Error when using recv().\n");
+    } else if (bytes_received == 0) {
+      break;
+    }
+
+    switch (operation.operation_type) {
+    case NEW_POST_IN_TOPIC:
+      break;
+    case LIST_TOPICS:
+      if (list_of_topics == NULL) {
+        strncpy(operation.content, "no topics available", CONTENT_SIZE);
+      } else { // fzr checagem se tamanho dos nomes de topicos somados da menso
+               // que 2048
+        get_topics_names(operation.content, list_of_topics);
+      }
+      break;
+    case SUBSCRIBE_IN_TOPIC:
+      struct Topic *topic =
+          get_or_create_topic(list_of_topics, operation.topic);
+      if (topic->subscribed_clients[operation.client_id - 1] == 1) {
+        strncpy(operation.content, "error: already subscribed\n", CONTENT_SIZE);
+      } else {
+        topic->subscribed_clients[operation.client_id - 1] = 1;
+      }
+      break;
+    case DISCONNECT_FROM_SERVER:
+      break;
+    default:
+      fprintf(stderr, "nao entendi\n");
+      break;
+    }
   }
 }
 
