@@ -47,4 +47,46 @@ int addrparse(const char *addrstr, const char *portstr,
 int server_sockaddr_init(const char *addr_family, const char *porstr,
                          struct sockaddr_storage *storage);
 
+/* Conforme especificado no enunciado, só existirão no máximo 10 clientes
+ * conectados por vez no servidor, e ao se desconectar um cliente é retirado da
+ * lista de clientes associados referentes aos tópicos qem que ele estava
+ * inscrito. Desse modo, para manter controle de quais clientes estão associados
+ * a um tópico, basta utilizar um vetor booleano.
+ *
+ *
+ * A quantidade de tópicos, no entanto, possui um tamanho máximo não
+ * determinado. Dessa forma, ela será implementada como uma lista encadeada. */
+
+struct Topic {
+  char *name[TOPIC_SIZE];
+  int subscribed_clients[MAX_CLIENTS];
+  Topic *next;
+};
+
+void insert_topic(struct Topic *head, const char *topic_name) {
+  struct Topic *curr = head;
+  while (curr->next != NULL) {
+    curr = curr->next;
+  }
+
+  struct Topic *new_topic = (struct Topic *)malloc(sizeof(struct Topic));
+  if (new_topic == NULL) {
+    err_n_die("Error while allocating memory using malloc()\n.");
+  }
+  strncpy(new_topic->name, topic_name, sizeof(topic_name));
+  memset(new_topic->subscribed_clients, 0,
+         sizeof(new_topic->subscribed_clients));
+  new_topic->next = NULL;
+}
+
+void remove_topic(struct Topic *head, const char *topic_name) {
+  struct Topic *curr = head;
+  while (strcmp(topic_name, curr->name) != 0) {
+    curr = curr->next;
+  }
+
+
+
+}
+
 #endif

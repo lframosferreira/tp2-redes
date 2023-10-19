@@ -2,6 +2,10 @@
 
 volatile int client_id_count = 0;
 
+
+
+
+
 void handle_client(int csockfd) {
 
   struct BlogOperation
