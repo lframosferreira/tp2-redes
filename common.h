@@ -33,6 +33,7 @@ struct BlogOperation {
     char content[CONTENT_SIZE];
 };
 
+void err_n_die(const char *msg);
 
 
 
