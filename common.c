@@ -6,7 +6,7 @@ void err_n_die(const char *msg) {
 }
 
 void server_usage(FILE *fp, const char *path) {
-  char *basename = strrchr(path, '/');
+  const char *basename = strrchr(path, '/');
   basename = basename ? basename + 1 : path;
   fprintf(fp, "usage: %s [IP_PROTOCOL] [PORT]\n", basename);
 }

@@ -1,9 +1,21 @@
 #include "common.h"
 
+volatile int client_id_count = 0;
+
 void handle_client(int csockfd) {
-  char *buff[1024];
-  ssize_t bytes_received = recv(csockfd, buff, sizeof(buff), 0);
-  fprintf(stdout, "%s\n", buff);
+
+  struct BlogOperation *operation =
+      (struct BlogOperation *)malloc(sizeof(struct BlogOperation));
+  memset(operation, 0, sizeof(*operation));
+  ssize_t bytes_received = recv(csockfd, operation, sizeof(*operation), 0);
+  if (bytes_received == -1) {
+    err_n_die("Erro no recv() de um client\n");
+  } else if (bytes_received == 0) {
+    fprintf(stdout, "client disconnected\n");
+    exit(EXIT_SUCCESS);
+  }
+
+  free(operation);
 }
 
 int main(int argc, char **argv) {

@@ -24,5 +24,20 @@ int main(int argc, char **argv) {
     err_n_die("Error while connecting to server.\n");
   }
 
+  char input_buffer[1024];
+
+  for (;;) {
+    memset(input_buffer, 0, sizeof(input_buffer));
+    if (fgets(input_buffer, sizeof(input_buffer), stdin) == NULL) {
+      close(sockfd);
+      err_n_die("Error while reading client input using fgets().\n");
+    }
+
+    if (send(sockfd, input_buffer, sizeof(input_buffer), 0) == -1) {
+      close(sockfd);
+      err_n_die("Error on using send().\n");
+    }
+  }
+
   return EXIT_SUCCESS;
 }
