@@ -96,7 +96,7 @@ struct Topic *get_or_create_topic(struct Topic *head, const char *topic_name) {
     if (new_topic == NULL) {
       err_n_die("Error while allocating memory using malloc()\n.");
     }
-    strncpy(new_topic->name, topic_name, sizeof(topic_name));
+    strcpy(new_topic->name, topic_name);
     memset(new_topic->subscribed_clients, 0,
            sizeof(new_topic->subscribed_clients));
     new_topic->next = NULL;
@@ -119,4 +119,11 @@ void get_topics_names(char *topics_names, struct Topic *head) {
       strcat(topics_names, ";");
     }
   }
+}
+
+
+
+
+void dbg(const char *msg){
+  fprintf(stdout, "%s\n", msg);
 }

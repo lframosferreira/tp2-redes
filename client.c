@@ -67,6 +67,7 @@ int main(int argc, char **argv) {
     char *topic;
 
     command = strtok(input_buffer, " ");
+    dbg(command);
 
     if (strcmp(command, "subscribe") == 0) {
       topic = strtok(NULL, " ");
@@ -90,7 +91,7 @@ int main(int argc, char **argv) {
       strncpy(operation.topic, topic, TOPIC_SIZE);
     } else if (strcmp(command, "list")) { // list topics case (maybe put it
                                           // before all others?)
-
+      dbg("settei msg do client pra list topics");
       operation.operation_type = LIST_TOPICS;
       strcpy(operation.topic, "");
       strcpy(operation.content, "");
@@ -118,6 +119,19 @@ int main(int argc, char **argv) {
     if (bytes_received == -1) {
       err_n_die("Error when using recv().\n");
     } else if (bytes_received == 0) {
+      break;
+    }
+
+    switch (operation.operation_type) {
+
+    case NEW_POST_IN_TOPIC:
+      break;
+    case LIST_TOPICS:
+      fprintf(stdout, "%s\n", operation.content);
+      break;
+    case SUBSCRIBE_IN_TOPIC:
+      break;
+    case DISCONNECT_FROM_SERVER:
       break;
     }
   }

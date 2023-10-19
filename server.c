@@ -2,7 +2,7 @@
 
 volatile int client_id_count = 0;
 
-volatile struct Topic *list_of_topics = NULL;
+struct Topic *list_of_topics = NULL;
 
 void handle_client(int csockfd) {
 
@@ -67,6 +67,10 @@ void handle_client(int csockfd) {
     default:
       fprintf(stderr, "nao entendi\n");
       break;
+    }
+
+    if (send(csockfd, &operation, sizeof(operation), 0) == -1) {
+      err_n_die("Error using send().\n");
     }
   }
 }

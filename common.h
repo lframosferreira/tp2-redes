@@ -58,7 +58,7 @@ int server_sockaddr_init(const char *addr_family, const char *porstr,
  * determinado. Dessa forma, ela será implementada como uma lista encadeada. */
 
 struct Topic {
-  char *name[TOPIC_SIZE];
+  char name[TOPIC_SIZE];
   int subscribed_clients[MAX_CLIENTS];
   struct Topic *next;
 };
@@ -67,6 +67,10 @@ struct Topic *get_or_create_topic(struct Topic *head, const char *topic_name);
 
 // armazena em topcis_names os nomes dos topicos separados por ;
 void get_topics_names(char *topics_names, struct Topic *head);
+
+
+
+void dbg(const char *msg);
 
 
 #endif
