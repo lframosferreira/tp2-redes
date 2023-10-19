@@ -42,13 +42,19 @@ int main(int argc, char **argv) {
 
   ssize_t bytes_received = recv(sockfd, &operation, sizeof(operation), 0);
   if (bytes_received == -1) {
-    err_n_die("Error when using recv() for the first connection with server.\n");
+    err_n_die(
+        "Error when using recv() for the first connection with server.\n");
   } else if (bytes_received == 0) {
     err_n_die("Server didn't respond.\n");
   }
 
+  const int MY_ID = operation.client_id;
 
   for (;;) {
+    memset(&operation, 0, sizeof(operation)); // nao sei se precisa disso mesmo
+    operation.client_id = MY_ID;
+    operation.server_response = 0;
+
     memset(input_buffer, 0, sizeof(input_buffer));
     if (fgets(input_buffer, sizeof(input_buffer), stdin) == NULL) {
       close(sockfd);
@@ -64,15 +70,35 @@ int main(int argc, char **argv) {
 
     if (strcmp(command, "subscribe") == 0) {
       topic = strtok(NULL, " ");
-    } else if (strcmp(command, "unsubscribe") == 0) {
+      operation.operation_type = SUBSCRIBE_IN_TOPIC;
+      strncpy(operation.topic, topic,
+              TOPIC_SIZE); // LANCAR ERRO SE TOPIC FOR MAIOR QUE TOPIC SIZE?
+      strcpy(operation.content, "");
+    } else if (strcmp(command, "unsubscribe") ==
+               0) { // n tem operation type tnc
       topic = strtok(NULL, " ");
     } else if (strcmp(command, "publish")) {
       strtok(NULL, " "); // discard in
       topic = strtok(NULL, " ");
+
+      if (fgets(operation.content, sizeof(operation.content), stdin) == NULL) {
+        err_n_die("Error while reading client input using fgets().\n");
+      }
+      operation.content[strcspn(operation.content, "\n")] = '\0';
+
+      operation.operation_type = NEW_POST_IN_TOPIC;
+      strncpy(operation.topic, topic, TOPIC_SIZE);
     } else if (strcmp(command, "list")) { // list topics case (maybe put it
                                           // before all others?)
 
+      operation.operation_type = LIST_TOPICS;
+      strcpy(operation.topic, "");
+      strcpy(operation.content, "");
+
     } else if (strcmp(command, "exit")) {
+      operation.operation_type = DISCONNECT_FROM_SERVER;
+      strcpy(operation.topic, "");
+      strcpy(operation.content, "");
 
     } else {
       fprintf(stderr, "error: command not found\n");
@@ -81,6 +107,18 @@ int main(int argc, char **argv) {
     if (send(sockfd, input_buffer, sizeof(input_buffer), 0) == -1) {
       close(sockfd);
       err_n_die("Error on using send().\n");
+    }
+
+    // Se for mensagem de 'exit', o cliente se desconecta
+    if (operation.operation_type == DISCONNECT_FROM_SERVER) {
+      break;
+    }
+
+    ssize_t bytes_received = recv(sockfd, &operation, sizeof(operation), 0);
+    if (bytes_received == -1) {
+      err_n_die("Error when using recv().\n");
+    } else if (bytes_received == 0) {
+      break;
     }
   }
 

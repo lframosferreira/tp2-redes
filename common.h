@@ -21,7 +21,7 @@
 // checar se deve ser enum
 
 #define NEW_CONNECTION 1
-#define NEW_POS_IN_TOPIC 2
+#define NEW_POST_IN_TOPIC 2
 #define LIST_TOPICS 3
 #define SUBSCRIBE_IN_TOPIC 4
 #define DISCONNECT_FROM_SERVER 5
