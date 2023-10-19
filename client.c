@@ -67,7 +67,6 @@ int main(int argc, char **argv) {
     char *topic;
 
     command = strtok(input_buffer, " ");
-    dbg(command);
 
     if (strcmp(command, "subscribe") == 0) {
       topic = strtok(NULL, " ");
@@ -78,7 +77,7 @@ int main(int argc, char **argv) {
     } else if (strcmp(command, "unsubscribe") ==
                0) { // n tem operation type tnc
       topic = strtok(NULL, " ");
-    } else if (strcmp(command, "publish")) {
+    } else if (strcmp(command, "publish") == 0) {
       strtok(NULL, " "); // discard in
       topic = strtok(NULL, " ");
 
@@ -89,14 +88,13 @@ int main(int argc, char **argv) {
 
       operation.operation_type = NEW_POST_IN_TOPIC;
       strncpy(operation.topic, topic, TOPIC_SIZE);
-    } else if (strcmp(command, "list")) { // list topics case (maybe put it
+    } else if (strcmp(command, "list") == 0) { // list topics case (maybe put it
                                           // before all others?)
-      dbg("settei msg do client pra list topics");
       operation.operation_type = LIST_TOPICS;
       strcpy(operation.topic, "");
       strcpy(operation.content, "");
 
-    } else if (strcmp(command, "exit")) {
+    } else if (strcmp(command, "exit") == 0) {
       operation.operation_type = DISCONNECT_FROM_SERVER;
       strcpy(operation.topic, "");
       strcpy(operation.content, "");
@@ -105,7 +103,7 @@ int main(int argc, char **argv) {
       fprintf(stderr, "error: command not found\n");
     }
 
-    if (send(sockfd, input_buffer, sizeof(input_buffer), 0) == -1) {
+    if (send(sockfd, &operation, sizeof(operation), 0) == -1) {
       close(sockfd);
       err_n_die("Error on using send().\n");
     }
