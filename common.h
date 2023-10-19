@@ -63,7 +63,7 @@ struct Topic {
   struct Topic *next;
 };
 
-struct Topic *get_or_create_topic(struct Topic *head, const char *topic_name);
+struct Topic *get_or_create_topic(struct Topic **head, const char *topic_name);
 
 // armazena em topcis_names os nomes dos topicos separados por ;
 void get_topics_names(char *topics_names, struct Topic *head);

@@ -85,19 +85,10 @@ int server_sockaddr_init(const char *addr_family, const char *portstr,
 
 /* --------------------------------------- */
 
-struct Topic *get_or_create_topic(struct Topic *head, const char *topic_name) {
+struct Topic *get_or_create_topic(struct Topic **head, const char *topic_name) {
 
-  struct Topic *curr = head;
-  while (curr != NULL && strcmp(topic_name, curr->name) != 0) {
-    if (curr->next == NULL) {
-      break;
-    }
-    curr = curr->next;
-  }
-
-  // Caso degenerado em que a lista inicial é vazia. Talvez tratar melhor e
-  // colocar explicitamente checagem de head no if
-  if (curr == NULL) {
+    // Caso degenerado em que a lista inicial é vazia.
+  if (*head == NULL) {
     struct Topic *new_topic = (struct Topic *)malloc(sizeof(struct Topic));
     if (new_topic == NULL) {
       err_n_die("Error while allocating memory using malloc()\n.");
@@ -106,8 +97,16 @@ struct Topic *get_or_create_topic(struct Topic *head, const char *topic_name) {
     memset(new_topic->subscribed_clients, 0,
            sizeof(new_topic->subscribed_clients));
     new_topic->next = NULL;
-    head = new_topic;
+    *head = new_topic;
     return new_topic;
+  }
+
+  struct Topic *curr = *head;
+  while (strcmp(topic_name, curr->name) != 0) {
+    if (curr->next == NULL) {
+      break;
+    }
+    curr = curr->next;
   }
 
   if (curr->next == NULL) {
@@ -127,17 +126,13 @@ struct Topic *get_or_create_topic(struct Topic *head, const char *topic_name) {
 }
 
 void get_topics_names(char *topics_names, struct Topic *head) {
-  if (head == NULL) {
-    strcpy(topics_names, "");
-    return;
-  }
-
   struct Topic *curr = head;
   while (curr != NULL) {
     strcat(topics_names, curr->name);
     if (curr->next != NULL) {
       strcat(topics_names, ";");
     }
+    curr = curr->next;
   }
 }
 

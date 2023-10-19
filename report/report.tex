@@ -1,0 +1,97 @@
+\documentclass{article}
+
+\usepackage[english]{babel}
+
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{natbib}
+\bibliographystyle{alpha}
+\usepackage{caption}
+\usepackage{float}
+
+\title{Redes de Computadores \\ \large Trabalho Prático 1}
+\author{Luís Felipe Ramos Ferreira}
+\date{\href{mailto:lframos\_ferreira@outlook.com}{\texttt{lframos\_ferreira@outlook.com}}
+}
+
+\begin{document}
+
+\maketitle
+
+\section{Introdução}
+
+O Trabalho Prático 2 da disciplina de Redes de Computadores teve como proposta
+o desenvolvimento de um \textit{Blog} que permite a interação entre vários clientes em um servidor usando sockets em linguagem C.
+
+O repositório onde está armazenado o código utilizado durante o desenvolvimento
+desse projeto
+pode ser encontrado \href{https://github.com/lframosferreira/tp2-redes}{neste
+      endereço}.
+
+\section{Implementação}
+
+Conforme especificado no enunciado, o projeto foi todo desenvolvido na
+linguagem de programação C em um ambiente \textit{Linux}, e o manuseio de
+sockets por
+meio da interface POSIX
+disponibilizada para a linguagem. Para manter uma maior organização do código,
+além dos arquivos \textit{server.c} e \textit{client.c}, os quais possuem
+respectivamente as implementações do servidor e do cliente,
+foi criado um arquivo auxiliar \textit{common.c} e seu arquivo de cabeçalho
+\textit{common.h}, os quais possuem as especificações e implementações de
+funções auxiliares que podem ser utilizadas por ambas as partes do projeto.
+
+\section{Desafios, dificuldades e imprevistos}
+
+A primeira dificuldade imposta pelo trabalho prático foi a familiarização com a
+interface POSIX de programação em sockets. Embora a linguagem C seja
+considerada de alto nível, em muitos momentos suas funcionalidades podem ser
+
+
+\section{Conclusão}
+
+Em suma o projeto permitiu grandes aprendizados tanto na parte teórica como na
+
+
+\section{Referências}
+
+\begin{itemize}
+      \item Livros:
+            \begin{itemize}
+                  \item Tanenbaum, A. S. \& Wetherall, D. (2011), Computer
+                        Networks, Prentice Hall, Boston.
+                  \item TCP/IP Sockets in C\@: Practical Guide for Programmers,
+                        Second Edition
+            \end{itemize}
+
+      \item Web:
+            \begin{itemize}
+                  \item
+
+                        \url{https://www.ibm.com/docs/en/zos/2.3.0?topic=sockets-using-sendto-recvfrom-calls}
+                  \item
+
+                        \url{https://www.educative.io/answers/how-to-implement-tcp-sockets-in-c}
+
+            \end{itemize}
+
+      \item Youtube:
+            \begin{itemize}
+                  \item \href{https://www.youtube.com/@JacobSorber}{Jacob
+                              Sorber}
+                  \item
+
+                        \href{https://www.youtube.com/watch?v=_lQ-3S4fJ0U&list=PLPyaR5G9aNDvs6TtdpLcVO43_jvxp4emI}{Think
+                              and Learn sockets playlist}
+                  \item
+
+                        \href{https://www.youtube.com/watch?v=tJ3qNtv0HVs&t=2s}{Playlist do professor
+                              Ítalo Cunha}
+            \end{itemize}
+
+\end{itemize}
+
+\end{document}

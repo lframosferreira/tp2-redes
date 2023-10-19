@@ -55,7 +55,7 @@ void handle_client(int csockfd) {
       break;
     case SUBSCRIBE_IN_TOPIC:
       struct Topic *topic =
-          get_or_create_topic(list_of_topics, operation.topic);
+          get_or_create_topic(&list_of_topics, operation.topic);
       if (topic->subscribed_clients[operation.client_id - 1] == 1) {
         strncpy(operation.content, "error: already subscribed\n", CONTENT_SIZE);
       } else {
@@ -120,6 +120,14 @@ int main(int argc, char **argv) {
     // threads here
 
     handle_client(csockfd);
+  }
+
+  // Desalocando memória utilizada para a lista de tópicos
+  struct Topic *curr = list_of_topics;
+  while (curr != NULL){
+    struct Topic *aux = curr;
+    curr = curr->next;
+    free(aux);
   }
 
   close(sockfd);
