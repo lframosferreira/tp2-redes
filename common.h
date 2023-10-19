@@ -34,8 +34,8 @@ struct BlogOperation {
 };
 
 void err_n_die(const char *msg);
-
-
+void server_usage(FILE *fp, const char *path);
+void client_usage(FILE *fp, const char *path);
 
 
 
