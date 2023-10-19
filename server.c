@@ -4,10 +4,12 @@ volatile int client_id_count = 0;
 
 void handle_client(int csockfd) {
 
-  struct BlogOperation *operation =
-      (struct BlogOperation *)malloc(sizeof(struct BlogOperation));
-  memset(operation, 0, sizeof(*operation));
-  ssize_t bytes_received = recv(csockfd, operation, sizeof(*operation), 0);
+  struct BlogOperation
+      operation; // checar se é ok fzr isso e nao alocar na heap
+  memset(&operation, 0, sizeof(operation));
+
+  // primeria conexao
+  ssize_t bytes_received = recv(csockfd, &operation, sizeof(operation), 0);
   if (bytes_received == -1) {
     err_n_die("Erro no recv() de um client\n");
   } else if (bytes_received == 0) {
@@ -15,7 +17,19 @@ void handle_client(int csockfd) {
     exit(EXIT_SUCCESS);
   }
 
-  free(operation);
+  operation.client_id = ++client_id_count;
+  operation.operation_type = NEW_CONNECTION;
+  operation.server_response = 1;
+  strcpy(operation.topic, "");
+  strcpy(operation.content, "");
+
+  if (send(csockfd, &operation, sizeof(operation), 0) == -1) {
+    err_n_die("Error on sending first message of connection to client.\n");
+  }
+  fprintf(stdout, "client %01d connected\n", operation.client_id);
+
+  for (;;) {
+  }
 }
 
 int main(int argc, char **argv) {
@@ -64,6 +78,8 @@ int main(int argc, char **argv) {
 
     handle_client(csockfd);
   }
+
+  close(sockfd);
 
   return EXIT_SUCCESS;
 }

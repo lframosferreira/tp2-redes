@@ -27,6 +27,7 @@
 #define DISCONNECT_FROM_SERVER 5
 
 #define MAX_CLIENTS 10
+#define MAX_BUFFER_SIZE 1024
 
 struct BlogOperation {
   int client_id;
