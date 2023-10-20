@@ -78,7 +78,8 @@ int main(int argc, char **argv) {
                0) { // n tem operation type tnc
       topic = strtok(NULL, " ");
     } else if (strcmp(command, "publish") == 0) {
-      char *in = strtok(NULL, " "); // discard in
+      topic = strtok(NULL, " "); // Essa chamada de strtok() armazena em topic o
+                                 // valor 'in'. Ele deve ser ignorado
       topic = strtok(NULL, " ");
       if (fgets(operation.content, sizeof(operation.content), stdin) == NULL) {
         err_n_die("Error while reading client input using fgets().\n");

@@ -6,8 +6,9 @@ int clients_list[MAX_CLIENTS] = {0};
 
 struct Topic *list_of_topics = NULL;
 
-void handle_client(int csockfd) {
-
+void *handle_client(void *csockfd_ptr) {
+  int csockfd = *((int *)csockfd_ptr);
+  free(csockfd_ptr);
   struct BlogOperation
       operation; // checar se é ok fzr isso e nao alocar na heap
   memset(&operation, 0, sizeof(operation));
@@ -131,7 +132,10 @@ int main(int argc, char **argv) {
 
     // threads here
 
-    handle_client(csockfd);
+    pthread_t t;
+    int *csockfd_ptr = (int *)malloc(sizeof(int));
+    *csockfd_ptr = csockfd;
+    pthread_create(&t, NULL, handle_client, csockfd_ptr);
   }
 
   // Desalocando memória utilizada para a lista de tópicos

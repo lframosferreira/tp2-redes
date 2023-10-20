@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -68,9 +69,6 @@ struct Topic *get_or_create_topic(struct Topic **head, const char *topic_name);
 // armazena em topcis_names os nomes dos topicos separados por ;
 void get_topics_names(char *topics_names, struct Topic *head);
 
-
-
 void dbg(const char *msg);
-
 
 #endif
