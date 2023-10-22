@@ -89,6 +89,10 @@ void *handle_client(void *csockfd_ptr) {
       }
       pthread_mutex_unlock(&topics_list_mutex);
       break;
+    case UNSUBSCRIBE_FROM_TOPIC:
+      // erro se nao tiver inscrito no topico?
+      // topico sempre existe, se nao existir devo lançar erro?
+      break;
     case DISCONNECT_FROM_SERVER:
       // Garantir que cliente é retirado da lista de inscrito dos tópicos aos
       // quais pertencia

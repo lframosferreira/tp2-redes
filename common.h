@@ -19,13 +19,16 @@
 #define TOPIC_SIZE 50
 #define CONTENT_SIZE 2048
 
-// checar se deve ser enum
+// Checar se isso deve ser enum
+// ATENÇÃO: cuidado com valor de unsubscribe from topic. Olhar spec assim que
+// monitora resonder. Isso aqui é uma solução paliativa
 
 #define NEW_CONNECTION 1
 #define NEW_POST_IN_TOPIC 2
 #define LIST_TOPICS 3
 #define SUBSCRIBE_IN_TOPIC 4
 #define DISCONNECT_FROM_SERVER 5
+#define UNSUBSCRIBE_FROM_TOPIC 6
 
 #define MAX_CLIENTS 10
 #define MAX_BUFFER_SIZE 1024
@@ -47,8 +50,6 @@ int addrparse(const char *addrstr, const char *portstr,
 
 int server_sockaddr_init(const char *addr_family, const char *porstr,
                          struct sockaddr_storage *storage);
-
-
 
 void dbg(const char *msg);
 

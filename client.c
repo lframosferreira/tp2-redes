@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
   const int MY_ID = operation.client_id;
 
   for (;;) {
-    memset(&operation, 0, sizeof(operation)); // nao sei se precisa disso mesmo
+    memset(&operation, 0, sizeof(operation));
     operation.client_id = MY_ID;
     operation.server_response = 0;
 
@@ -71,12 +71,13 @@ int main(int argc, char **argv) {
     if (strcmp(command, "subscribe") == 0) {
       topic = strtok(NULL, " ");
       operation.operation_type = SUBSCRIBE_IN_TOPIC;
-      strncpy(operation.topic, topic,
-              TOPIC_SIZE); // LANCAR ERRO SE TOPIC FOR MAIOR QUE TOPIC SIZE?
+      strncpy(operation.topic, topic, TOPIC_SIZE);
       strcpy(operation.content, "");
-    } else if (strcmp(command, "unsubscribe") ==
-               0) { // n tem operation type tnc
+    } else if (strcmp(command, "unsubscribe") == 0) {
       topic = strtok(NULL, " ");
+      operation.operation_type = UNSUBSCRIBE_FROM_TOPIC;
+      strncpy(operation.topic, topic, TOPIC_SIZE);
+      strcpy(operation.content, "");
     } else if (strcmp(command, "publish") == 0) {
       topic = strtok(NULL, " "); // Essa chamada de strtok() armazena em topic o
                                  // valor 'in'. Ele deve ser ignorado
@@ -87,8 +88,7 @@ int main(int argc, char **argv) {
       operation.content[strcspn(operation.content, "\n")] = '\0';
       operation.operation_type = NEW_POST_IN_TOPIC;
       strncpy(operation.topic, topic, TOPIC_SIZE);
-    } else if (strcmp(command, "list") == 0) { // list topics case (maybe put it
-                                               // before all others?)
+    } else if (strcmp(command, "list") == 0) {
       operation.operation_type = LIST_TOPICS;
       strcpy(operation.topic, "");
       strcpy(operation.content, "");
