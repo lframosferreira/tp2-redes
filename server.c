@@ -1,16 +1,26 @@
 #include "topic.h"
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t topics_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t clients_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-volatile int client_id_count = 0;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-int clients_list[MAX_CLIENTS] = {0};
+volatile int clients_list[MAX_CLIENTS] = {0};
+
+int test_and_set_client_lowest_id() {
+  for (int i = 0; i < MAX_CLIENTS; i++) {
+    if (clients_list[i] == 0) {
+      clients_list[i] = 1;
+      return i + 1;
+    }
+  }
+  return -1;
+}
 
 void *handle_client(void *csockfd_ptr) {
   int csockfd = *((int *)csockfd_ptr);
   free(csockfd_ptr);
-  struct BlogOperation
-      operation; // checar se é ok fzr isso e nao alocar na heap
+  struct BlogOperation operation;
   memset(&operation, 0, sizeof(operation));
 
   // Tratamento da conexão inicial, onde o servidor atribui um ID ao cliente que
@@ -23,7 +33,14 @@ void *handle_client(void *csockfd_ptr) {
     exit(EXIT_SUCCESS);
   }
 
-  operation.client_id = ++client_id_count;
+  pthread_mutex_lock(&clients_list_mutex);
+  operation.client_id = test_and_set_client_lowest_id();
+  if (operation.client_id == -1) {
+    fprintf(
+        stderr,
+        "Todos os id's estão ocupados. Já existem 10 clientes no servidor.\n");
+  }
+  pthread_mutex_unlock(&clients_list_mutex);
   operation.operation_type = NEW_CONNECTION;
   operation.server_response = 1;
   strcpy(operation.topic, "");
@@ -48,9 +65,9 @@ void *handle_client(void *csockfd_ptr) {
 
     switch (operation.operation_type) {
     case NEW_POST_IN_TOPIC:
-      pthread_mutex_lock(&mutex);
+      pthread_mutex_lock(&topics_list_mutex);
       topic = get_or_create_topic(operation.topic);
-      pthread_mutex_unlock(&mutex);
+      pthread_mutex_unlock(&topics_list_mutex);
 
       // redirect to other threads MAIN
       fprintf(stdout, "new post added in %s by %02d\n", operation.topic,
@@ -63,20 +80,27 @@ void *handle_client(void *csockfd_ptr) {
 
       break;
     case SUBSCRIBE_IN_TOPIC:
-      pthread_mutex_lock(&mutex);
+      pthread_mutex_lock(&topics_list_mutex);
       topic = get_or_create_topic(operation.topic);
       if (topic->subscribed_clients[operation.client_id - 1] == 1) {
         strncpy(operation.content, "error: already subscribed\n", CONTENT_SIZE);
       } else {
         topic->subscribed_clients[operation.client_id - 1] = 1;
       }
-      pthread_mutex_unlock(&mutex);
+      pthread_mutex_unlock(&topics_list_mutex);
       break;
     case DISCONNECT_FROM_SERVER:
-      pthread_mutex_lock(&mutex);
-      clients_list[operation.client_id - 1] = 0;
+      // Garantir que cliente é retirado da lista de inscrito dos tópicos aos
+      // quais pertencia
+      pthread_mutex_lock(&topics_list_mutex);
       remove_client_from_topics(operation.client_id);
-      pthread_mutex_unlock(&mutex);
+      pthread_mutex_unlock(&topics_list_mutex);
+
+      // Garantir que o id dele está liberado agora
+      pthread_mutex_lock(&clients_list_mutex);
+      clients_list[operation.client_id - 1] = 0;
+      pthread_mutex_unlock(&clients_list_mutex);
+
       close(csockfd);
       fprintf(stdout, "client %02d was disconnected\n", operation.client_id);
       return NULL;
@@ -140,7 +164,12 @@ int main(int argc, char **argv) {
     pthread_t t;
     int *csockfd_ptr = (int *)malloc(sizeof(int));
     *csockfd_ptr = csockfd;
-    pthread_create(&t, NULL, handle_client, csockfd_ptr);
+
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+    pthread_create(&t, &attr, handle_client, csockfd_ptr);
   }
 
   close(sockfd);
