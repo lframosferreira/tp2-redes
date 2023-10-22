@@ -1,5 +1,7 @@
 #include "common.h"
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 volatile int client_id_count = 0;
 
 int clients_list[MAX_CLIENTS] = {0};
@@ -35,8 +37,6 @@ void *handle_client(void *csockfd_ptr) {
 
   fprintf(stdout, "client %02d connected\n", operation.client_id);
 
-  const int CLIENT_ID = operation.client_id;
-
   for (;;) {
     memset(&operation, 0, sizeof(operation));
     ssize_t bytes_received = recv(csockfd, &operation, sizeof(operation), 0);
@@ -50,7 +50,9 @@ void *handle_client(void *csockfd_ptr) {
 
     switch (operation.operation_type) {
     case NEW_POST_IN_TOPIC:
+      pthread_mutex_lock(&mutex);
       topic = get_or_create_topic(&list_of_topics, operation.topic);
+      pthread_mutex_unlock(&mutex);
 
       // redirect to other threads MAIN
       fprintf(stdout, "new post added in %s by %02d\n", operation.topic,
@@ -65,12 +67,14 @@ void *handle_client(void *csockfd_ptr) {
       }
       break;
     case SUBSCRIBE_IN_TOPIC:
+      pthread_mutex_lock(&mutex);
       topic = get_or_create_topic(&list_of_topics, operation.topic);
       if (topic->subscribed_clients[operation.client_id - 1] == 1) {
         strncpy(operation.content, "error: already subscribed\n", CONTENT_SIZE);
       } else {
         topic->subscribed_clients[operation.client_id - 1] = 1;
       }
+      pthread_mutex_unlock(&mutex);
       break;
     case DISCONNECT_FROM_SERVER:
       clients_list[operation.client_id - 1] = 0;
@@ -86,6 +90,7 @@ void *handle_client(void *csockfd_ptr) {
       err_n_die("Error using send().\n");
     }
   }
+  return NULL;
 }
 
 int main(int argc, char **argv) {
