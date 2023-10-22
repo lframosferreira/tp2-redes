@@ -8,7 +8,7 @@
 #---------------------------------------------------------------------
 
 CC = gcc
-LIBS = -lm
+LIBS = -lm -lpthread
 BIN = bin
 OBJ = obj
 HDRS = common.h topic.h
@@ -27,7 +27,7 @@ $(COMMON): common.c $(HDRS)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/common.o common.c
 
 $(TOPIC): topic.c $(HDRS)
-	$(CC) $(CFLAGS) -c -o $(OBJ)/TOPIC.o topic.c
+	$(CC) $(CFLAGS) -c -o $(OBJ)/topic.o topic.c
 
 $(SERVER): server.c $(HDRS)
 	$(CC) $(CFLAGS) server.c -o $(BIN)/server $(OBJ)/* $(LIBS)

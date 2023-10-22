@@ -73,9 +73,13 @@ void *handle_client(void *csockfd_ptr) {
       pthread_mutex_unlock(&mutex);
       break;
     case DISCONNECT_FROM_SERVER:
+      pthread_mutex_lock(&mutex);
       clients_list[operation.client_id - 1] = 0;
-      fprintf(stdout, "client %02d was disconnected\n", operation.client_id);
+      remove_client_from_topics(operation.client_id);
+      pthread_mutex_unlock(&mutex);
       close(csockfd);
+      fprintf(stdout, "client %02d was disconnected\n", operation.client_id);
+      return NULL;
       break;
     default:
       fprintf(stderr, "error: command not found\n");

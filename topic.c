@@ -59,6 +59,14 @@ void get_topics_names(char *topics_names) {
   }
 }
 
+void remove_client_from_topics(const int client_id) {
+  struct Topic *curr = list_of_topics;
+  while (curr != NULL) {
+    curr->subscribed_clients[client_id - 1] = 0;
+    curr = curr->next;
+  }
+}
+
 /* // Desalocando memória utilizada para a lista de tópicos
 struct Topic *curr = list_of_topics;
 while (curr != NULL) {
