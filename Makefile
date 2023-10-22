@@ -11,22 +11,26 @@ CC = gcc
 LIBS = -lm
 BIN = bin
 OBJ = obj
-HDRS = common.h
+HDRS = common.h topic.h
 CFLAGS = -Wall
 
 COMMON = $(OBJ)/common.o
+TOPIC = $(OBJ)/topic.o
 SERVER = $(BIN)/server
 CLIENT = $(BIN)/client
 
-all: $(COMMON) $(SERVER) $(CLIENT) 
+all: $(COMMON) $(TOPIC) $(SERVER) $(CLIENT) 
 
 $(COMMON): common.c $(HDRS)
 	test -d $(OBJ) || mkdir $(OBJ)
 	test -d $(BIN) || mkdir $(BIN)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/common.o common.c
 
+$(TOPIC): topic.c $(HDRS)
+	$(CC) $(CFLAGS) -c -o $(OBJ)/TOPIC.o topic.c
+
 $(SERVER): server.c $(HDRS)
-	$(CC) $(CFLAGS) server.c -o $(BIN)/server $(OBJ)/common.o $(LIBS)
+	$(CC) $(CFLAGS) server.c -o $(BIN)/server $(OBJ)/* $(LIBS)
 
 $(CLIENT): client.c $(HDRS)
 	$(CC) $(CFLAGS) client.c -o $(BIN)/client $(OBJ)/common.o $(LIBS)

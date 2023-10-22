@@ -1,12 +1,10 @@
-#include "common.h"
+#include "topic.h"
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 volatile int client_id_count = 0;
 
 int clients_list[MAX_CLIENTS] = {0};
-
-struct Topic *list_of_topics = NULL;
 
 void *handle_client(void *csockfd_ptr) {
   int csockfd = *((int *)csockfd_ptr);
@@ -51,7 +49,7 @@ void *handle_client(void *csockfd_ptr) {
     switch (operation.operation_type) {
     case NEW_POST_IN_TOPIC:
       pthread_mutex_lock(&mutex);
-      topic = get_or_create_topic(&list_of_topics, operation.topic);
+      topic = get_or_create_topic(operation.topic);
       pthread_mutex_unlock(&mutex);
 
       // redirect to other threads MAIN
@@ -59,16 +57,14 @@ void *handle_client(void *csockfd_ptr) {
               operation.client_id);
       break;
     case LIST_TOPICS:
-      if (list_of_topics == NULL) {
-        strncpy(operation.content, "no topics available", CONTENT_SIZE);
-      } else { // fzr checagem se tamanho dos nomes de topicos somados da menso
-               // que 2048
-        get_topics_names(operation.content, list_of_topics);
-      }
+      // fzr checagem se tamanho dos nomes de topicos somados da menso
+      // que 2048
+      get_topics_names(operation.content);
+
       break;
     case SUBSCRIBE_IN_TOPIC:
       pthread_mutex_lock(&mutex);
-      topic = get_or_create_topic(&list_of_topics, operation.topic);
+      topic = get_or_create_topic(operation.topic);
       if (topic->subscribed_clients[operation.client_id - 1] == 1) {
         strncpy(operation.content, "error: already subscribed\n", CONTENT_SIZE);
       } else {
@@ -141,14 +137,6 @@ int main(int argc, char **argv) {
     int *csockfd_ptr = (int *)malloc(sizeof(int));
     *csockfd_ptr = csockfd;
     pthread_create(&t, NULL, handle_client, csockfd_ptr);
-  }
-
-  // Desalocando memória utilizada para a lista de tópicos
-  struct Topic *curr = list_of_topics;
-  while (curr != NULL) {
-    struct Topic *aux = curr;
-    curr = curr->next;
-    free(aux);
   }
 
   close(sockfd);
