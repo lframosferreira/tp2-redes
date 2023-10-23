@@ -19,7 +19,6 @@ struct Topic {
   struct Topic *next;
 };
 
-// COMO A LISTA É GLOBAL ELA NÃO PRECISA SER PASSADA COMO PARÂMETRO
 struct Topic *get_or_create_topic(const char *topic_name);
 
 // armazena em topcis_names os nomes dos topicos separados por ;

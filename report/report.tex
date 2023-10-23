@@ -25,7 +25,7 @@
 
 O Trabalho Prático 2 da disciplina de Redes de Computadores teve como proposta
 o desenvolvimento de um \textit{Blog} que permite a interação entre vários
-clientes em um servidor usando sockets em linguagem C.
+clientes em um servidor usando \textit{sockets} e \textit{threads} com a linguagem C.
 
 O repositório onde está armazenado o código utilizado durante o desenvolvimento
 desse projeto
@@ -36,14 +36,34 @@ pode ser encontrado \href{https://github.com/lframosferreira/tp2-redes}{neste
 
 Conforme especificado no enunciado, o projeto foi todo desenvolvido na
 linguagem de programação C em um ambiente \textit{Linux}, e o manuseio de
-sockets por
+\textit{sockets} e \texit{threads} por
 meio da interface POSIX
 disponibilizada para a linguagem. Para manter uma maior organização do código,
 além dos arquivos \textit{server.c} e \textit{client.c}, os quais possuem
 respectivamente as implementações do servidor e do cliente,
-foi criado um arquivo auxiliar \textit{common.c} e seu arquivo de cabeçalho
+foram criados uos arquivos auxiliares \textit{common.c} e seu arquivo de cabeçalho
 \textit{common.h}, os quais possuem as especificações e implementações de
-funções auxiliares que podem ser utilizadas por ambas as partes do projeto.
+funções auxiliares que podem ser utilizadas por ambas as partes do projeto, assim como o arquivo \textit{topic.c} e seu arquivo de cabeçalho \texit{topic.h},
+os quais possuem as especificações e implementações relativas à estrutura de dados que armazena os tópicos criados para o \textit{Blog}.
+
+\subsection{Arquitetura do sistema}
+
+Conforme especificado, o servidor implementado deve ser capaz de lidar com múltiplas conexões de clientes ao mesmo tempo. Para realizar essa tarefa,
+foram utilizadas \textit{threads} da interface POSIX. Cada cliente possui um \textit{thread} associada a ele no servidor, a qual está desanexada da \textit{thread}
+principal do programa. A escolha de implementá-las dessa maneira veio do fato de que não há a necessidade de se realizar um \texit{join} em cada \texit{thread} após que ela finalize sua execução, e assim
+que a conexão for finalizada os recursos associados à aquela \textit{thread} em específico podem ser desalocados.
+
+Para armazenar os tópicos criados pelos clientes, foi criada uma \href{https://en.wikipedia.org/wiki/Linked_list}{lista encadeada}, uma vez que se trata de uma estrutura simples
+de se criar e manipular, assim como cresce dinamicamente de forma simples, o que é desejável já que o número de tópicos que os clientes irão criar não é determinado a princípio.
+
+Para manter controle do menor identificador disponível para ser atribuído à um novo cliente, um simples vetor binário que contêm um mapeamento de quais identificadores estão sendo utilizados
+ é armazenado no servidor e este manipulado por uma função específica denominada \textit{test_and_set_lowest_id.}
+
+ \subsection{Condições de corrida}
+
+ Por se tratar de uma arquitetura com múltiplas \textit{threads}, problemas como \href{https://learn.microsoft.com/en-us/troubleshoot/developer/visualstudio/visual-basic/language-compilers/race-conditions-deadlocks}{condições de corrida}
+  podem acontecer. Uma vez que estruturas como a lista encadeada de tópicos e o vetor de identificadores disponíveis
+ podem ser acessados e manipulados por diferentes \textit{threads} ao mesmo tempo, situações estranhas podem acontecer.
 
 \section{Desafios, dificuldades e imprevistos}
 
@@ -81,9 +101,6 @@ Em suma o projeto permitiu grandes aprendizados tanto na parte teórica como na
             \begin{itemize}
                   \item \href{https://www.youtube.com/@JacobSorber}{Jacob
                               Sorber}
-                  \item
-                        \href{https://www.youtube.com/watch?v=Y6pFtgRdUts}{Jacob Sorber specific on
-                              \textit{select}}
                   \item
 
                         \href{https://www.youtube.com/watch?v=_lQ-3S4fJ0U&list=PLPyaR5G9aNDvs6TtdpLcVO43_jvxp4emI}{Think
