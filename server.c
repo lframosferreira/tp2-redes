@@ -174,6 +174,8 @@ int main(int argc, char **argv) {
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
     pthread_create(&t, &attr, handle_client, csockfd_ptr);
+
+    pthread_attr_destroy(&attr);
   }
 
   close(sockfd);
