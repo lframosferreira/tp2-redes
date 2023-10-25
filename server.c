@@ -20,6 +20,9 @@ int test_and_set_client_lowest_id() {
 void *handle_client(void *csockfd_ptr) {
   int csockfd = *((int *)csockfd_ptr);
   free(csockfd_ptr);
+
+  pthread_detach(pthread_self());
+
   struct BlogOperation operation;
   memset(&operation, 0, sizeof(operation));
 
@@ -169,13 +172,15 @@ int main(int argc, char **argv) {
     int *csockfd_ptr = (int *)malloc(sizeof(int));
     *csockfd_ptr = csockfd;
 
-    pthread_attr_t attr;
+    /* pthread_attr_t attr;
     pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED); */
 
-    pthread_create(&t, &attr, handle_client, csockfd_ptr);
+    if (pthread_create(&t, NULL, handle_client, csockfd_ptr) != 0) {
+      err_n_die("Error creating thread.\n");
+    }
 
-    pthread_attr_destroy(&attr);
+    //pthread_attr_destroy(&attr);
   }
 
   close(sockfd);
