@@ -26,7 +26,8 @@ int main(int argc, char **argv) {
 
   char input_buffer[MAX_BUFFER_SIZE];
 
-  // lógica da mensagem inicial enviada quando a conexao é feita
+  /* Lógica da mensagem inicial onde a conexção é estabelecida e o servidor
+   * atribui um identificador único ao cliente. */
   struct BlogOperation operation;
   operation.client_id = 0;
   operation.operation_type = NEW_CONNECTION;
@@ -79,8 +80,9 @@ int main(int argc, char **argv) {
       strncpy(operation.topic, topic, TOPIC_SIZE);
       strcpy(operation.content, "");
     } else if (strcmp(command, "publish") == 0) {
-      topic = strtok(NULL, " "); // Essa chamada de strtok() armazena em topic o
-                                 // valor 'in'. Ele deve ser ignorado
+      /* Essa chamada de strtok() armazena em topic o
+      valor 'in'. Ele deve ser ignorado. */
+      topic = strtok(NULL, " ");
       topic = strtok(NULL, " ");
       if (fgets(operation.content, sizeof(operation.content), stdin) == NULL) {
         err_n_die("Error while reading client input using fgets().\n");
@@ -107,7 +109,8 @@ int main(int argc, char **argv) {
       err_n_die("Error on using send().\n");
     }
 
-    // Se for mensagem de 'exit', o cliente se desconecta
+    /* Se for mensagem de 'exit', o cliente se desconecta e não irá prosseguir
+     * com o loop de troca de mensagens.*/
     if (operation.operation_type == DISCONNECT_FROM_SERVER) {
       break;
     }
@@ -130,9 +133,10 @@ int main(int argc, char **argv) {
       break;
     case DISCONNECT_FROM_SERVER:
       break;
+    default:
+      break;
     }
   }
-
   close(sockfd);
   return EXIT_SUCCESS;
 }

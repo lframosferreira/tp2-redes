@@ -3,8 +3,6 @@
 pthread_mutex_t topics_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t clients_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-
 volatile int clients_list[MAX_CLIENTS] = {0};
 
 int test_and_set_client_lowest_id() {
@@ -26,8 +24,9 @@ void *handle_client(void *csockfd_ptr) {
   struct BlogOperation operation;
   memset(&operation, 0, sizeof(operation));
 
-  // Tratamento da conexão inicial, onde o servidor atribui um ID ao cliente que
-  // acabou de se conectar e envia uma mensagem de volta com o ID escolhido.
+  /* Tratamento da conexão inicial, onde o servidor atribui um identificador ao
+  cliente que acabou de se conectar e envia uma mensagem de volta com o
+  identificador escolhido. */
   ssize_t bytes_received = recv(csockfd, &operation, sizeof(operation), 0);
   if (bytes_received == -1) {
     err_n_die("Erro no recv() de um client\n");
@@ -90,13 +89,12 @@ void *handle_client(void *csockfd_ptr) {
       topic = get_or_create_topic(operation.topic);
       pthread_mutex_unlock(&topics_list_mutex);
 
-      // redirect to other threads MAIN
+      /* TODO: redirecionar mensagem para outros clientes inscritos no tópico */
       fprintf(stdout, "new post added in %s by %02d\n", operation.topic,
               operation.client_id);
       break;
     case LIST_TOPICS:
-      // fzr checagem se tamanho dos nomes de topicos somados da menso
-      // que 2048
+      /* TODO: checar se nomes dos tópicos concatenados será menos que 2048 */
       get_topics_names(operation.content);
 
       break;
@@ -115,13 +113,13 @@ void *handle_client(void *csockfd_ptr) {
       // topico sempre existe, se nao existir devo lançar erro?
       break;
     case DISCONNECT_FROM_SERVER:
-      // Garantir que cliente é retirado da lista de inscrito dos tópicos aos
-      // quais pertencia
+      /* Lógica para garantir que cliente é retirado da lista de inscritos dos
+         tópicos aos quais pertencia antes de se desconectar. */
       pthread_mutex_lock(&topics_list_mutex);
       remove_client_from_topics(operation.client_id);
       pthread_mutex_unlock(&topics_list_mutex);
 
-      // Garantir que o id dele está liberado agora
+      /* Lógica para liberação do identifcador do client desconectado. */
       pthread_mutex_lock(&clients_list_mutex);
       clients_list[operation.client_id - 1] = 0;
       pthread_mutex_unlock(&clients_list_mutex);
@@ -185,21 +183,13 @@ int main(int argc, char **argv) {
       err_n_die("Error on using accept().\n");
     }
 
-    // threads here
-
     pthread_t t;
     int *csockfd_ptr = (int *)malloc(sizeof(int));
     *csockfd_ptr = csockfd;
 
-    /* pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED); */
-
     if (pthread_create(&t, NULL, handle_client, csockfd_ptr) != 0) {
       err_n_die("Error creating thread.\n");
     }
-
-    // pthread_attr_destroy(&attr);
   }
 
   close(sockfd);
