@@ -5,6 +5,7 @@ pthread_mutex_t clients_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 volatile int clients_list[MAX_CLIENTS] = {0};
 
+
 int test_and_set_client_lowest_id() {
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if (clients_list[i] == 0) {
@@ -60,6 +61,9 @@ void *handle_client(void *csockfd_ptr) {
   fprintf(stdout, "client %02d connected\n", client_id);
 
   for (;;) {
+
+
+
     memset(&operation, 0, sizeof(operation));
     ssize_t bytes_received = recv(csockfd, &operation, sizeof(operation), 0);
     if (bytes_received == -1) {
@@ -90,6 +94,7 @@ void *handle_client(void *csockfd_ptr) {
       pthread_mutex_unlock(&topics_list_mutex);
 
       /* TODO: redirecionar mensagem para outros clientes inscritos no tópico */
+
       fprintf(stdout, "new post added in %s by %02d\n", operation.topic,
               operation.client_id);
       break;
