@@ -66,11 +66,3 @@ void remove_client_from_topics(const int client_id) {
     curr = curr->next;
   }
 }
-
-/* // Desalocando memória utilizada para a lista de tópicos
-struct Topic *curr = list_of_topics;
-while (curr != NULL) {
-  struct Topic *aux = curr;
-  curr = curr->next;
-  free(aux);
-} */
