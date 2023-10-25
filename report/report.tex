@@ -55,7 +55,7 @@ dados que armazena os tópicos criados para o \textit{Blog}.
 
 Conforme especificado, o servidor implementado deve ser capaz de lidar com
 múltiplas conexões de clientes ao mesmo tempo. Para realizar essa tarefa,
-foram utilizadas \textit{threads} da interface POSIX. Cada cliente possui um
+foram utilizadas \textit{threads} da interface POSIX.\@ Cada cliente possui um
 \textit{thread} associada a ele no servidor, a qual está desanexada da
 \textit{thread}
 principal do programa. A escolha de implementá-las dessa maneira veio do fato
@@ -104,6 +104,8 @@ nunca é trivial, e garantir que condições de corridas não irão ocorrer e qu
 memória alocada para as \textit{threads} será desalocada assim que elas não
 forem mais utilizadas foi um grande empecilho.
 
+ESCREVER AQUI
+
 \section{Conclusão}
 
 Em suma o projeto permitiu grandes aprendizados tanto na parte teórica como na
@@ -130,7 +132,6 @@ deve ser feita e mantida a comunicação entre um servidor e um cliente, etc.
       \item Web:
             \begin{itemize}
                   \item
-
                         \url{https://www.ibm.com/docs/en/zos/2.3.0?topic=sockets-using-sendto-recvfrom-calls}
                   \item
 

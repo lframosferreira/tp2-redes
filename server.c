@@ -42,8 +42,13 @@ void *handle_client(void *csockfd_ptr) {
     fprintf(
         stderr,
         "Todos os id's estão ocupados. Já existem 10 clientes no servidor.\n");
+    exit(EXIT_FAILURE);
   }
   pthread_mutex_unlock(&clients_list_mutex);
+
+  /* Variável utilizada pelo servidor para armazenar o identificador do cliente
+   * designado à essa thread em específico. */
+  const int client_id = operation.client_id;
   operation.operation_type = NEW_CONNECTION;
   operation.server_response = 1;
   strcpy(operation.topic, "");
@@ -53,7 +58,7 @@ void *handle_client(void *csockfd_ptr) {
     err_n_die("Error on sending first message of connection to client.\n");
   }
 
-  fprintf(stdout, "client %02d connected\n", operation.client_id);
+  fprintf(stdout, "client %02d connected\n", client_id);
 
   for (;;) {
     memset(&operation, 0, sizeof(operation));
@@ -61,6 +66,19 @@ void *handle_client(void *csockfd_ptr) {
     if (bytes_received == -1) {
       err_n_die("Error when using recv().\n");
     } else if (bytes_received == 0) {
+      /* Caso a conexão com o client seja perdida por algum motivo que não seja
+       * um comando exit, o identificador daquele cliente ainda deve ser
+       * liberado, assim como ele deve ser retirado da lista de inscritos dos
+       * tópicos nos quais ele estava inscrito. */
+      pthread_mutex_lock(&topics_list_mutex);
+      remove_client_from_topics(client_id);
+      pthread_mutex_unlock(&topics_list_mutex);
+
+      pthread_mutex_lock(&clients_list_mutex);
+      clients_list[client_id - 1] = 0;
+      pthread_mutex_unlock(&clients_list_mutex);
+
+      close(csockfd);
       break;
     }
 
@@ -121,6 +139,7 @@ void *handle_client(void *csockfd_ptr) {
       err_n_die("Error using send().\n");
     }
   }
+
   return NULL;
 }
 
@@ -180,7 +199,7 @@ int main(int argc, char **argv) {
       err_n_die("Error creating thread.\n");
     }
 
-    //pthread_attr_destroy(&attr);
+    // pthread_attr_destroy(&attr);
   }
 
   close(sockfd);
