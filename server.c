@@ -61,9 +61,6 @@ void *handle_client(void *csockfd_ptr) {
   fprintf(stdout, "client %02d connected\n", client_id);
 
   for (;;) {
-
-
-
     memset(&operation, 0, sizeof(operation));
     ssize_t bytes_received = recv(csockfd, &operation, sizeof(operation), 0);
     if (bytes_received == -1) {

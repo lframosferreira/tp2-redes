@@ -21,7 +21,7 @@
 
 // Checar se isso deve ser enum
 // ATENÇÃO: cuidado com valor de unsubscribe from topic. Olhar spec assim que
-// monitora resonder. Isso aqui é uma solução paliativa
+// monitora responder. Isso aqui é uma solução paliativa
 
 #define NEW_CONNECTION 1
 #define NEW_POST_IN_TOPIC 2
