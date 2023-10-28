@@ -3,13 +3,12 @@
 pthread_mutex_t topics_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t clients_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-volatile int clients_list[MAX_CLIENTS] = {0};
+int clients_list[MAX_CLIENTS] = {-1};
 
-
-int test_and_set_client_lowest_id() {
+int test_and_set_client_lowest_id(const int csockfd) {
   for (int i = 0; i < MAX_CLIENTS; i++) {
-    if (clients_list[i] == 0) {
-      clients_list[i] = 1;
+    if (clients_list[i] == -1) {
+      clients_list[i] = csockfd;
       return i + 1;
     }
   }
@@ -37,7 +36,7 @@ void *handle_client(void *csockfd_ptr) {
   }
 
   pthread_mutex_lock(&clients_list_mutex);
-  operation.client_id = test_and_set_client_lowest_id();
+  operation.client_id = test_and_set_client_lowest_id(csockfd);
   if (operation.client_id == -1) {
     fprintf(
         stderr,
@@ -54,6 +53,8 @@ void *handle_client(void *csockfd_ptr) {
   strcpy(operation.topic, "");
   strcpy(operation.content, "");
 
+  /* Primeira mensagem enviada ao cliente, que deve sempre ser feita,a tribuindo
+   * à ele um identificador único. */
   if (send(csockfd, &operation, sizeof(operation), 0) == -1) {
     err_n_die("Error on sending first message of connection to client.\n");
   }
@@ -75,7 +76,7 @@ void *handle_client(void *csockfd_ptr) {
       pthread_mutex_unlock(&topics_list_mutex);
 
       pthread_mutex_lock(&clients_list_mutex);
-      clients_list[client_id - 1] = 0;
+      clients_list[client_id - 1] = -1;
       pthread_mutex_unlock(&clients_list_mutex);
 
       close(csockfd);
@@ -88,9 +89,18 @@ void *handle_client(void *csockfd_ptr) {
     case NEW_POST_IN_TOPIC:
       pthread_mutex_lock(&topics_list_mutex);
       topic = get_or_create_topic(operation.topic);
-      pthread_mutex_unlock(&topics_list_mutex);
-
+      topic->subscribed_clients[operation.client_id - 1] = 1;
       /* TODO: redirecionar mensagem para outros clientes inscritos no tópico */
+      pthread_mutex_lock(&clients_list_mutex);
+      for (int i = 0; i < MAX_CLIENTS; i++) {
+        if (client_id != i + 1 && topic->subscribed_clients[i] == 1) {
+          if (send(clients_list[i], &operation, sizeof(operation), 0) == -1) {
+            err_n_die("Error using send() on NEW_POST_IN_TOPIC.\n");
+          }
+        }
+      }
+      pthread_mutex_unlock(&clients_list_mutex);
+      pthread_mutex_unlock(&topics_list_mutex);
 
       fprintf(stdout, "new post added in %s by %02d\n", operation.topic,
               operation.client_id);
@@ -98,7 +108,9 @@ void *handle_client(void *csockfd_ptr) {
     case LIST_TOPICS:
       /* TODO: checar se nomes dos tópicos concatenados será menos que 2048 */
       get_topics_names(operation.content);
-
+      if (send(csockfd, &operation, sizeof(operation), 0) == -1) {
+        err_n_die("Error using send() on LIST_TOPICS.\n");
+      }
       break;
     case SUBSCRIBE_IN_TOPIC:
       pthread_mutex_lock(&topics_list_mutex);
@@ -123,7 +135,7 @@ void *handle_client(void *csockfd_ptr) {
 
       /* Lógica para liberação do identifcador do client desconectado. */
       pthread_mutex_lock(&clients_list_mutex);
-      clients_list[operation.client_id - 1] = 0;
+      clients_list[operation.client_id - 1] = -1;
       pthread_mutex_unlock(&clients_list_mutex);
 
       close(csockfd);
@@ -133,10 +145,6 @@ void *handle_client(void *csockfd_ptr) {
     default:
       fprintf(stderr, "error: command not found\n");
       break;
-    }
-
-    if (send(csockfd, &operation, sizeof(operation), 0) == -1) {
-      err_n_die("Error using send().\n");
     }
   }
 
@@ -149,6 +157,10 @@ int main(int argc, char **argv) {
     server_usage(stderr, argv[0]);
     exit(EXIT_FAILURE);
   }
+
+  pthread_mutex_lock(&clients_list_mutex);
+  memset(clients_list, -1, sizeof(clients_list));
+  pthread_mutex_unlock(&clients_list_mutex);
 
   char *addr_family = argv[1];
   char *portstr = argv[2];

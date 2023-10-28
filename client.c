@@ -1,5 +1,43 @@
 #include "common.h"
 
+void *listen_server(void *sockfd_ptr) {
+  int sockfd = *((int *)sockfd_ptr);
+  free(sockfd_ptr);
+
+  pthread_detach(pthread_self());
+
+  for (;;) {
+    struct BlogOperation operation = {0};
+
+    ssize_t bytes_received = recv(sockfd, &operation, sizeof(operation), 0);
+    if (bytes_received == -1) {
+      err_n_die("Error when using recv().\n");
+    } else if (bytes_received == 0) {
+      err_n_die("Bytes received = 0 in recv() from server.\n");
+    }
+
+    switch (operation.operation_type) {
+
+    case NEW_POST_IN_TOPIC:
+      fprintf(stdout, "new post added in %s by %02d\n", operation.topic,
+              operation.client_id);
+      fprintf(stdout, "%s\n", operation.content);
+      break;
+    case LIST_TOPICS:
+      fprintf(stdout, "%s\n", operation.content);
+      break;
+    case SUBSCRIBE_IN_TOPIC:
+      break;
+    case DISCONNECT_FROM_SERVER:
+      break;
+    default:
+      break;
+    }
+  }
+
+  return NULL;
+}
+
 int main(int argc, char **argv) {
 
   if (argc != 3) {
@@ -28,7 +66,7 @@ int main(int argc, char **argv) {
 
   /* Lógica da mensagem inicial onde a conexção é estabelecida e o servidor
    * atribui um identificador único ao cliente. */
-  struct BlogOperation operation;
+  struct BlogOperation operation = {0};
   operation.client_id = 0;
   operation.operation_type = NEW_CONNECTION;
   operation.server_response = 0;
@@ -47,6 +85,15 @@ int main(int argc, char **argv) {
         "Error when using recv() for the first connection with server.\n");
   } else if (bytes_received == 0) {
     err_n_die("Server didn't respond.\n");
+  }
+
+  /* Criação da trhead auxiliar que irá continuamente escutar do servidor. */
+  pthread_t t;
+  int *sockfd_ptr = (int *)malloc(sizeof(int));
+  *sockfd_ptr = sockfd;
+
+  if (pthread_create(&t, NULL, listen_server, sockfd_ptr) != 0) {
+    err_n_die("Error creating thread.\n");
   }
 
   const int MY_ID = operation.client_id;
@@ -112,28 +159,6 @@ int main(int argc, char **argv) {
     /* Se for mensagem de 'exit', o cliente se desconecta e não irá prosseguir
      * com o loop de troca de mensagens.*/
     if (operation.operation_type == DISCONNECT_FROM_SERVER) {
-      break;
-    }
-
-    ssize_t bytes_received = recv(sockfd, &operation, sizeof(operation), 0);
-    if (bytes_received == -1) {
-      err_n_die("Error when using recv().\n");
-    } else if (bytes_received == 0) {
-      break;
-    }
-
-    switch (operation.operation_type) {
-
-    case NEW_POST_IN_TOPIC:
-      break;
-    case LIST_TOPICS:
-      fprintf(stdout, "%s\n", operation.content);
-      break;
-    case SUBSCRIBE_IN_TOPIC:
-      break;
-    case DISCONNECT_FROM_SERVER:
-      break;
-    default:
       break;
     }
   }
