@@ -101,7 +101,6 @@ void *handle_client(void *csockfd_ptr) {
       }
       pthread_mutex_unlock(&clients_list_mutex);
       pthread_mutex_unlock(&topics_list_mutex);
-
       fprintf(stdout, "new post added in %s by %02d\n", operation.topic,
               operation.client_id);
       break;

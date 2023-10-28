@@ -77,6 +77,22 @@ identificadores estão sendo utilizados
 é armazenado no servidor e este manipulado por uma função específica
 denominada \textit{test\_and\_set\_lowest\_id()}.
 
+Pelo lado do cliente, duas \textit{threads} são utilizadas. A \textit{thread}
+principal, inicialmente, estabelece a primeira conexão com o servidor e obtêm o
+identificador que foi atribuído pelo servidor à ele. Em seguida, ela irá
+continuamente ler da entrada do usuário para saber qual a próxima operação que
+ele deseja que seja executado.
+
+A outra \textit{thread} é responsável por continuamente escutar o servidor e
+imprimir em tela o que for necessário. Por exemplo, nos tipos de operação
+\textit{list topics} e \textit{publish in <topic>}.
+
+Para que cada \textit{thread} do servidor saiba para quais \textit{sockets} ele
+deve enviar a mensagem de adição de um novo tópico, após uma ação desse tipo, o
+descritor de arquivo do \textit{socket} de cada cliente é armazenado juntamente
+na lista de clientes conectados, facilitadno assim a troca de mensagens na
+arquitetura do sistema.
+
 \subsection{Condições de corrida}
 
 Por se tratar de uma arquitetura com múltiplas \textit{threads}, problemas
@@ -102,9 +118,12 @@ interface POSIX de programação em \textit{threads}. Implementar uma arquitetur
 com múltiplas \textit{threads}
 nunca é trivial, e garantir que condições de corridas não irão ocorrer e que a
 memória alocada para as \textit{threads} será desalocada assim que elas não
-forem mais utilizadas foi um grande empecilho.
+forem mais utilizadas foi um grande empecilho. Como comentado anteriormente,
+evitar problemas como condições de corrida foi feita por meio da implementação
+de vários \textit{mutex}.
 
-ESCREVER AQUI
+O principla desafio do trabalho, no entanto, se referiu à como fazer a operação
+de \textit{publish in <topic>} funcionar.
 
 \section{Conclusão}
 
@@ -132,6 +151,7 @@ deve ser feita e mantida a comunicação entre um servidor e um cliente, etc.
       \item Web:
             \begin{itemize}
                   \item
+
                         \url{https://www.ibm.com/docs/en/zos/2.3.0?topic=sockets-using-sendto-recvfrom-calls}
                   \item
 
