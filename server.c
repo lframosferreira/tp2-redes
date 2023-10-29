@@ -53,7 +53,7 @@ void *handle_client(void *csockfd_ptr) {
   strcpy(operation.topic, "");
   strcpy(operation.content, "");
 
-  /* Primeira mensagem enviada ao cliente, que deve sempre ser feita,a tribuindo
+  /* Primeira mensagem enviada ao cliente, que deve sempre ser feita, atribuindo
    * à ele um identificador único. */
   if (send(csockfd, &operation, sizeof(operation), 0) == -1) {
     err_n_die("Error on sending first message of connection to client.\n");
@@ -89,11 +89,9 @@ void *handle_client(void *csockfd_ptr) {
     case NEW_POST_IN_TOPIC:
       pthread_mutex_lock(&topics_list_mutex);
       topic = get_or_create_topic(operation.topic);
-      topic->subscribed_clients[operation.client_id - 1] = 1;
-      /* TODO: redirecionar mensagem para outros clientes inscritos no tópico */
       pthread_mutex_lock(&clients_list_mutex);
       for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (client_id != i + 1 && topic->subscribed_clients[i] == 1) {
+        if (topic->subscribed_clients[i] == 1) {
           if (send(clients_list[i], &operation, sizeof(operation), 0) == -1) {
             err_n_die("Error using send() on NEW_POST_IN_TOPIC.\n");
           }
@@ -120,10 +118,21 @@ void *handle_client(void *csockfd_ptr) {
         topic->subscribed_clients[operation.client_id - 1] = 1;
       }
       pthread_mutex_unlock(&topics_list_mutex);
+      fprintf(stdout, "client %02d subscribed to %s\n", client_id,
+              operation.topic);
       break;
     case UNSUBSCRIBE_FROM_TOPIC:
       // erro se nao tiver inscrito no topico?
       // topico sempre existe, se nao existir devo lançar erro?
+      pthread_mutex_lock(&topics_list_mutex);
+      topic = get_or_create_topic(
+          operation.topic); // isso ta errado, pq se o topico n existir nao é
+                            // pra eu criar ele, eu acho FICAR ATENTO ISSO DEVE
+                            // SER CORRIGIDO
+      topic->subscribed_clients[client_id - 1] = 0;
+      pthread_mutex_unlock(&topics_list_mutex);
+      fprintf(stdout, "client %02d unsubscribed to %s\n", client_id,
+              operation.topic);
       break;
     case DISCONNECT_FROM_SERVER:
       /* Lógica para garantir que cliente é retirado da lista de inscritos dos

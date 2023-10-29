@@ -122,8 +122,39 @@ forem mais utilizadas foi um grande empecilho. Como comentado anteriormente,
 evitar problemas como condições de corrida foi feita por meio da implementação
 de vários \textit{mutex}.
 
-O principla desafio do trabalho, no entanto, se referiu à como fazer a operação
-de \textit{publish in <topic>} funcionar.
+O principal desafio do trabalho, no entanto, se referiu à como fazer a operação
+de \textit{publish in <topic>} funcionar. Quando um cliente executa essa ação,
+uma mensagem de aviso deve ser redirecionada para todos os outros
+clientes inscritos naquele tópico em particular, e compreender como fazer esse
+tipo de comunicação tomou muito tempo. A solução adotada segue a seguinte
+estrutura:
+
+\begin{enumerate}
+      \item O servidor possui \(N\) \textit{threads}, onde \(N - 1\) são
+            utilizadas para manter a conexão com cada um dos \(N - 1\) clientes
+            atualmente
+            conectados e a outra responsável por escutar e aceitar novas
+            conexões.
+      \item O cliente possui duas \textit{threads}. Uma delas é responsável por
+            ler da entrada do usuário e processar as operações desejadas,
+            enquanto a outra
+            constantemente escuta possíveis mensagens enviadas pelo servidor.
+      \item O servidor mantêm uma lista com os descritores de arquivo dos
+            \textit{sockets} atrelados a cada cliente conectado. Quando a
+            operação de \textit{publish in <topic>} é processada, a lista de
+            clientes
+            inscritos naquele tópico é analisada e, para cada um deles, a
+            \textit{thread} responsável pelo cliente que enviou a operação
+            inicial envia
+            para cada um desses outros clientes a mensagem de aviso de nova
+            publicação.
+\end{enumerate}
+
+Essa solução é funcional e cumpriu os critérios estabelecidos, embora acredite
+que existam soluçções mais complexas onde as próprias \textit{threads}
+responsáveis por cada cliente consigam enviar as mensagens de aviso para seus
+respectivos clientes por meio de algum tipo de comunicação entre
+\textit{threads}.
 
 \section{Conclusão}
 
