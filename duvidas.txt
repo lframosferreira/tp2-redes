@@ -1,3 +1,2 @@
 1. Um cliente pode publicar em um topico no qual ele nao esta inscrito? Se nao, devemos enviar uma mensagem de erro especifica?
-2. Podemos garantir que a concatenação de todos os nomes de tópicos juntos não darão mais do que 2048 nytes, para que essa informação possa ser transmitida pelo content, ou devemos fazer essa checagem?
-3. O ID zero é valido?
+2. Podemos garantir que a concatenação de todos os nomes de tópicos juntos não darão mais do que 2048 bytes, para que essa informação possa ser transmitida pelo content, ou devemos fazer essa checagem?

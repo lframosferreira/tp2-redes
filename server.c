@@ -3,7 +3,7 @@
 pthread_mutex_t topics_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t clients_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int clients_list[MAX_CLIENTS] = {-1};
+int clients_list[MAX_CLIENTS];
 
 int test_and_set_client_lowest_id(const int csockfd) {
   for (int i = 0; i < MAX_CLIENTS; i++) {
@@ -155,7 +155,6 @@ void *handle_client(void *csockfd_ptr) {
       break;
     }
   }
-
   return NULL;
 }
 

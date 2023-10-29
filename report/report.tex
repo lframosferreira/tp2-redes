@@ -12,7 +12,7 @@
 \usepackage{caption}
 \usepackage{float}
 
-\title{Redes de Computadores \\ \large Trabalho Prático 1}
+\title{Redes de Computadores \\ \large Trabalho Prático 2}
 \author{Luís Felipe Ramos Ferreira}
 \date{\href{mailto:lframos\_ferreira@outlook.com}{\texttt{lframos\_ferreira@outlook.com}}
 }
@@ -121,6 +121,25 @@ memória alocada para as \textit{threads} será desalocada assim que elas não
 forem mais utilizadas foi um grande empecilho. Como comentado anteriormente,
 evitar problemas como condições de corrida foi feita por meio da implementação
 de vários \textit{mutex}.
+
+Um outro problema encontrado no desenvolvimento foi o da implementação da
+estrutura de dados para armazenamento dos tópicos do servidor e dos clientes
+associados a cada um deles. A princípio, a solução imediata para garantir
+organização foi a de criar uma \textit{struct} específica para representar um
+tópico, a qual armazenaria seu nome e a lista de clientes inscritos nele e,
+globalmente no servidor, manter um vetor com os tópicos criados. A questão é
+que o número de tópicos que podem ser criados não é determinado a princípio e,
+dessa forma, a estrutura que os armazena deveria ser dinâmica. Por isso,
+optou-se por criar uma lista encadeada de tópicos, como detalhado melhor na
+seção anterior. A implementação
+da lista foi trabalhosa, uma vez que exige uma manipulação complexa de
+ponteiros e referências para posições de memória, e diversos erros foram
+encontrados durante o desenvolvimento, como
+\href{https://en.wikipedia.org/wiki/Segmentation_fault}{\textit{segmentation
+            fault}} por exemplo. A resolução desses problemas e a implementação
+de uma lista encadeada eficiente e correta foi possível com o uso de
+ferramentas de \textit{debugging} assim como a revisita de conteúdos vistos
+durante a disciplina de Estruturas de Dados.
 
 O principal desafio do trabalho, no entanto, se referiu à como fazer a operação
 de \textit{publish in <topic>} funcionar. Quando um cliente executa essa ação,
