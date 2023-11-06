@@ -27,6 +27,7 @@ void *listen_server(void *sockfd_ptr) {
       fprintf(stdout, "%s\n", operation.content);
       break;
     case SUBSCRIBE_IN_TOPIC:
+      /* Caso em que se imprime a mensagem 'error: already subscribed'. */
       fprintf(stdout, "%s\n", operation.content);
       break;
     case DISCONNECT_FROM_SERVER:
