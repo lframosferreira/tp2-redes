@@ -27,6 +27,7 @@ void *listen_server(void *sockfd_ptr) {
       fprintf(stdout, "%s\n", operation.content);
       break;
     case SUBSCRIBE_IN_TOPIC:
+      fprintf(stdout, "%s\n", operation.content);
       break;
     case DISCONNECT_FROM_SERVER:
       break;

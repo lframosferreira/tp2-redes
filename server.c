@@ -113,22 +113,28 @@ void *handle_client(void *csockfd_ptr) {
       pthread_mutex_lock(&topics_list_mutex);
       topic = get_or_create_topic(operation.topic);
       if (topic->subscribed_clients[operation.client_id - 1] == 1) {
-        strncpy(operation.content, "error: already subscribed\n", CONTENT_SIZE);
+        strncpy(operation.content, "error: already subscribed", CONTENT_SIZE);
+        if (send(csockfd, &operation, sizeof(operation), 0) == -1) {
+          err_n_die("Error using send() on SUBSCRIBE_IN_TOPIC.\n");
+        }
       } else {
         topic->subscribed_clients[operation.client_id - 1] = 1;
+        fprintf(stdout, "client %02d subscribed to %s\n", client_id,
+                operation.topic);
       }
       pthread_mutex_unlock(&topics_list_mutex);
-      fprintf(stdout, "client %02d subscribed to %s\n", client_id,
-              operation.topic);
+
       break;
     case UNSUBSCRIBE_FROM_TOPIC:
-      // erro se nao tiver inscrito no topico?
-      // topico sempre existe, se nao existir devo lançar erro?
       pthread_mutex_lock(&topics_list_mutex);
       topic = get_or_create_topic(
-          operation.topic); // isso ta errado, pq se o topico n existir nao é
-                            // pra eu criar ele, eu acho FICAR ATENTO ISSO DEVE
-                            // SER CORRIGIDO
+          operation
+              .topic); /* Como respondido no fórum da disciplina, não existe um
+                          caso de teste/uso em que um usuário tenta de
+                          desinscrever de um tópico que não existe ou no qual
+                          não já estivesse previamente inscrito. Nesse caso, o
+                          'topic' retornado aqui sempre será um tópico que já
+                          existe, isto é, não será criado nenhum tópico novo.*/
       topic->subscribed_clients[client_id - 1] = 0;
       pthread_mutex_unlock(&topics_list_mutex);
       fprintf(stdout, "client %02d unsubscribed to %s\n", client_id,
