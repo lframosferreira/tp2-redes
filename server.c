@@ -153,7 +153,7 @@ void *handle_client(void *csockfd_ptr) {
       pthread_mutex_unlock(&clients_list_mutex);
 
       close(csockfd);
-      fprintf(stdout, "client %02d was disconnected\n", operation.client_id);
+      fprintf(stdout, "client %02d disconnected\n", operation.client_id);
       return NULL;
       break;
     default:
